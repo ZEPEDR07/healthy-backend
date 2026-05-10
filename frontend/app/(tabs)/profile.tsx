@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -15,17 +15,21 @@ export default function Profile() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
+  const doLogout = async () => {
+    await logout();
+    router.replace('/welcome');
+  };
+
   const confirmLogout = () => {
+    if (Platform.OS === 'web') {
+      // eslint-disable-next-line no-alert
+      const ok = typeof window !== 'undefined' && window.confirm('Tens a certeza que queres sair?');
+      if (ok) doLogout();
+      return;
+    }
     Alert.alert('Sair', 'Tens a certeza?', [
       { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-          router.replace('/welcome');
-        },
-      },
+      { text: 'Sair', style: 'destructive', onPress: doLogout },
     ]);
   };
 
