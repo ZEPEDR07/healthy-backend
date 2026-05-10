@@ -1,0 +1,146 @@
+{
+  "theme": "dark",
+  "archetype": "2 (Performance Pro)",
+  "rationale": "High energy, precise, command-center feel specifically catering to athlete recovery, mimicking Whoop and Bevel with a dark neon aesthetic.",
+  "colors": {
+    "backgrounds": {
+      "app_bg": "#0A0A0A",
+      "card_surface": "#1A1A1A",
+      "card_surface_elevated": "#242424",
+      "nav_bar": "#0A0A0A"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#8E8E93",
+      "tertiary": "#636366"
+    },
+    "accents": {
+      "recovery_green": "#32D74B",
+      "strain_blue": "#0A84FF",
+      "sleep_indigo": "#5E5CE6",
+      "stress_orange": "#FF9F0A",
+      "stress_red": "#FF453A",
+      "white_glow": "#FFFFFF"
+    },
+    "borders": {
+      "subtle": "#333333",
+      "focus": "#5E5CE6"
+    }
+  },
+  "typography": {
+    "font_family_heading": "BarlowCondensed-Bold, System",
+    "font_family_body": "Inter-Regular, System",
+    "scales": {
+      "hero_metric": { "fontSize": 64, "fontWeight": "900", "letterSpacing": -1 },
+      "h1": { "fontSize": 32, "fontWeight": "800", "letterSpacing": -0.5 },
+      "h2": { "fontSize": 24, "fontWeight": "700" },
+      "h3": { "fontSize": 20, "fontWeight": "600" },
+      "body": { "fontSize": 16, "fontWeight": "400" },
+      "caption": { "fontSize": 12, "fontWeight": "500", "textTransform": "uppercase", "letterSpacing": 1 }
+    }
+  },
+  "layout_and_spacing": {
+    "grid_base": 8,
+    "paddings": {
+      "screen": 24,
+      "card": 20,
+      "button": 16,
+      "input": 16
+    },
+    "border_radius": {
+      "card": 16,
+      "button": 12,
+      "input": 8,
+      "pill": 999
+    }
+  },
+  "components": {
+    "circular_progress_ring": {
+      "library": "react-native-svg",
+      "strokeWidth": 12,
+      "trackColor": "#242424",
+      "lineCap": "round"
+    },
+    "charts": {
+      "library": "victory-native or react-native-chart-kit",
+      "style": "minimalist, hidden grid lines, thick neon stroke colors mapping to metrics"
+    },
+    "buttons": {
+      "primary": {
+        "backgroundColor": "#FFFFFF",
+        "color": "#000000",
+        "borderRadius": 12
+      },
+      "secondary": {
+        "backgroundColor": "transparent",
+        "borderColor": "#333333",
+        "borderWidth": 1,
+        "color": "#FFFFFF"
+      }
+    },
+    "cards": {
+      "backgroundColor": "#1A1A1A",
+      "borderRadius": 16,
+      "borderWidth": 1,
+      "borderColor": "#333333",
+      "padding": 20
+    }
+  },
+  "icons": {
+    "library": "@expo/vector-icons",
+    "usage": "Use consistently for tab bar, metric icons, and settings. No emojis."
+  },
+  "testing": {
+    "attribute": "data-testid",
+    "rules": "All interactive elements, buttons, inputs, tabs, and key metric cards MUST have a data-testid attribute for automated testing. Example: data-testid='recovery-score-card'"
+  },
+  "screens": {
+    "onboarding": {
+      "layout": "Full-screen background image with dark overlay, text at bottom, large primary CTA",
+      "elements": ["Welcome screen", "Device pairing (Apple Watch / Mi Band 8)", "Profile setup"]
+    },
+    "dashboard_home": {
+      "layout": "Bento grid style using Flexbox. Large Hero circular ring for Recovery Score. Smaller cards for Strain, Sleep, Stress.",
+      "metrics": ["Recovery (0-100)", "Strain (0-21)", "Sleep Score", "Stress"]
+    },
+    "metric_details": {
+      "layout": "Header with metric value. Large chart showing historical or intra-day trend. Breakdown list below.",
+      "types": {
+        "recovery": "HRV, RHR, Respiratory Rate",
+        "strain": "Daily Activity, HR Zones",
+        "sleep": "Sleep Stages (Deep, REM, Light, Awake), Duration, Efficiency",
+        "stress": "Stress Timeline Chart"
+      }
+    },
+    "history_trends": {
+      "layout": "Tab selector (Weekly/Monthly). Stacked charts or line charts comparing Strain vs Recovery."
+    },
+    "ai_health_tips": {
+      "layout": "Chat-like or Insight-card layout. Focus on Claude-powered text blocks advising the user based on their data."
+    },
+    "profile_settings": {
+      "layout": "List layout with distinct sections for connected devices, app units, and account management."
+    }
+  },
+  "media": {
+    "image_urls": {
+      "onboarding_background": {
+        "url": "https://images.unsplash.com/photo-1637974013743-82656f7c3f49?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwyfHxkYXJrJTIwZ3ltJTIwYXRobGV0ZSUyMHN0cmV0Y2hpbmd8ZW58MHx8fHwxNzc4NDU2MjI0fDA&ixlib=rb-4.1.0&q=85",
+        "description": "a man standing on one leg in a gym, dark lighting",
+        "category": "onboarding_bg"
+      },
+      "avatar_placeholder": {
+        "url": "https://images.unsplash.com/photo-1768036479485-6127b351b0c5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwzfHxwcm9maWxlJTIwYXZhdGFyJTIwZGFyayUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzc4NDU2MjIwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract silhouette with glowing hues",
+        "category": "profile_avatar"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly adhere to the dark theme, using #0A0A0A for main backgrounds to create an elite athletic vibe.",
+    "Use react-native-svg for all circular score rings and apply the corresponding neon accent colors.",
+    "Ensure all interactive components and key view elements receive a 'data-testid' for testing (e.g., 'dashboard-recovery-ring').",
+    "Implement device pairing simulations (Apple Watch & Xiaomi Mi Band 8) in the Onboarding flow.",
+    "Use standard React Native components; this is a mobile app, do NOT use HTML/CSS or Shadcn web components."
+  ]
+}
