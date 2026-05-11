@@ -512,14 +512,14 @@ async def analyze_food(req: NutritionAnalyzeReq, user=Depends(get_current_user))
         import anthropic as _anthropic
         _client = _anthropic.AsyncAnthropic(api_key=EMERGENT_LLM_KEY)
         _system = (
-            "És um nutricionista IA que analisa fotos de comida e devolve macros em pt-PT. "
+            "Es um nutricionista IA que analisa fotos de comida e devolve macros em pt-PT. "
             "Responde APENAS em JSON puro com a estrutura: "
-            "{"items":[{"name":"<nome>","calories":<int>,"protein_g":<int>,"
-            ""carbs_g":<int>,"fat_g":<int>}],"
-            ""totals":{"calories":<int>,"protein_g":<int>,"carbs_g":<int>,"fat_g":<int>},"
-            ""summary":"<frase curta>"}. "
-            "Estima porções a olho. Se não identificares comida, devolve items vazio e summary "
-            "'Não foi detectada comida'."
+            '{"items":[{"name":"<nome>","calories":<int>,"protein_g":<int>,'
+            '"carbs_g":<int>,"fat_g":<int>}],'
+            '"totals":{"calories":<int>,"protein_g":<int>,"carbs_g":<int>,"fat_g":<int>},'
+            '"summary":"<frase curta>"}. '
+            "Estima porcoes a olho. Se nao identificares comida, devolve items vazio e summary "
+            "'Nao foi detectada comida'."
         )
         _prompt = "Analisa esta refeição e devolve macros estimados em JSON."
         if req.note:
