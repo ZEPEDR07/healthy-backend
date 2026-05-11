@@ -442,14 +442,15 @@ async def generate_tip(req: TipReq, user=Depends(get_current_user)):
     tip_text = ""
     tip_title = ""
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"tips-{user['id']}-{focus}",
-            system_message=system_msg,
-        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        msg = UserMessage(text=f"{context}\n\nGera uma dica premium em JSON.")
-        response = await chat.send_message(msg)
+        import anthropic as _anthropic
+        _client = _anthropic.AsyncAnthropic(api_key=EMERGENT_LLM_KEY)
+        _resp = await _client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=1024,
+            system=system_msg,
+            messages=[{"role": "user", "content": f"{context}\n\nGera uma dica premium em JSON."}],
+        )
+        response = _resp.content[0].text
         match = re.search(r"\{.*\}", response, re.DOTALL)
         if match:
             data = json.loads(match.group(0))
@@ -508,27 +509,41 @@ async def analyze_food(req: NutritionAnalyzeReq, user=Depends(get_current_user))
     summary = ""
 
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"nutrition-{user['id']}-{uuid.uuid4()}",
-            system_message=(
-                "És um nutricionista IA que analisa fotos de comida e devolve macros em pt-PT. "
-                "Responde APENAS em JSON puro com a estrutura: "
-                "{\"items\":[{\"name\":\"<nome>\",\"calories\":<int>,\"protein_g\":<int>,"
-                "\"carbs_g\":<int>,\"fat_g\":<int>}],"
-                "\"totals\":{\"calories\":<int>,\"protein_g\":<int>,\"carbs_g\":<int>,\"fat_g\":<int>},"
-                "\"summary\":\"<frase curta>\"}. "
-                "Estima porções a olho. Se não identificares comida, devolve items vazio e summary "
-                "'Não foi detectada comida'."
-            ),
-        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        image_content = ImageContent(image_base64=b64)
-        prompt = "Analisa esta refeição e devolve macros estimados em JSON."
+        import anthropic as _anthropic
+        _client = _anthropic.AsyncAnthropic(api_key=EMERGENT_LLM_KEY)
+        _system = (
+            "És um nutricionista IA que analisa fotos de comida e devolve macros em pt-PT. "
+            "Responde APENAS em JSON puro com a estrutura: "
+            "{"items":[{"name":"<nome>","calories":<int>,"protein_g":<int>,"
+            ""carbs_g":<int>,"fat_g":<int>}],"
+            ""totals":{"calories":<int>,"protein_g":<int>,"carbs_g":<int>,"fat_g":<int>},"
+            ""summary":"<frase curta>"}. "
+            "Estima porções a olho. Se não identificares comida, devolve items vazio e summary "
+            "'Não foi detectada comida'."
+        )
+        _prompt = "Analisa esta refeição e devolve macros estimados em JSON."
         if req.note:
-            prompt += f" Nota do utilizador: {req.note}"
-        msg = UserMessage(text=prompt, file_contents=[image_content])
-        response = await chat.send_message(msg)
+            _prompt += f" Nota do utilizador: {req.note}"
+        _resp = await _client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=1024,
+            system=_system,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/jpeg",
+                            "data": b64,
+                        },
+                    },
+                    {"type": "text", "text": _prompt},
+                ],
+            }],
+        )
+        response = _resp.content[0].text
         match = re.search(r"\{.*\}", response, re.DOTALL)
         if match:
             data = json.loads(match.group(0))
