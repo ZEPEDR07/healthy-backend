@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { apiGet, apiPost, clearToken, getToken, setToken } from './api';
+import { apiGet, apiPost, apiPatch, clearToken, getToken, setToken } from './api';
 
-type User = {
+export type User = {
   id: string;
   email: string;
   name: string;
   devices: string[];
   onboarded: boolean;
+  age?: number;
+  gender?: string;
+  height_cm?: number;
+  weight_kg?: number;
+  goal?: string;
+  premium_status: 'free' | 'trial' | 'lifetime';
+  trial_end?: string | null;
+  premium_active: boolean;
   created_at: string;
 };
 
@@ -17,7 +25,10 @@ type Ctx = {
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-  onboard: (devices: string[], extra?: { age?: number; gender?: string; goal?: string }) => Promise<void>;
+  onboard: (payload: any) => Promise<void>;
+  updateProfile: (payload: any) => Promise<User>;
+  startTrial: () => Promise<User>;
+  redeemCode: (code: string) => Promise<User>;
 };
 
 const AuthCtx = createContext<Ctx | null>(null);
@@ -44,9 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const login = async (email: string, password: string) => {
     const res = await apiPost<{ token: string; user: User }>('/auth/login', { email, password });
@@ -62,13 +71,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await clearToken();
     setUser(null);
   };
-  const onboard = async (devices: string[], extra?: any) => {
-    const u = await apiPost<User>('/auth/onboard', { devices, ...(extra || {}) });
+  const onboard = async (payload: any) => {
+    const u = await apiPost<User>('/auth/onboard', payload);
     setUser(u);
+  };
+  const updateProfile = async (payload: any) => {
+    const u = await apiPatch<User>('/auth/profile', payload);
+    setUser(u);
+    return u;
+  };
+  const startTrial = async () => {
+    const u = await apiPost<User>('/premium/start-trial', {});
+    setUser(u);
+    return u;
+  };
+  const redeemCode = async (code: string) => {
+    const u = await apiPost<User>('/premium/redeem', { code });
+    setUser(u);
+    return u;
   };
 
   return (
-    <AuthCtx.Provider value={{ user, loading, login, register, logout, refresh, onboard }}>
+    <AuthCtx.Provider value={{ user, loading, login, register, logout, refresh, onboard, updateProfile, startTrial, redeemCode }}>
       {children}
     </AuthCtx.Provider>
   );

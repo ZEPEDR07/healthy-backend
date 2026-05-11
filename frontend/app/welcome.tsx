@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(8,8,10,0.72)' },
   safe: { flex: 1, padding: 24, justifyContent: 'space-between' },
   top: { paddingTop: 8 },
-  brandTag: { color: theme.recovery, fontSize: 12, letterSpacing: 2, fontWeight: '700' },
+  brandTag: { color: theme.primary, fontSize: 12, letterSpacing: 2, fontWeight: '700' },
   bottom: { paddingBottom: 12 },
   title: { color: '#fff', fontSize: 44, fontWeight: '900', letterSpacing: -1, lineHeight: 48 },
   subtitle: { color: theme.textSecondary, fontSize: 16, marginTop: 16, marginBottom: 32, lineHeight: 22 },

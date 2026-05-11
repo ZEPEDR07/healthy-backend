@@ -21,7 +21,7 @@ export default function Index() {
 
   return (
     <View testID="splash-screen" style={{ flex: 1, backgroundColor: theme.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator color={theme.recovery} size="large" />
+      <ActivityIndicator color={theme.primary} size="large" />
     </View>
   );
 }

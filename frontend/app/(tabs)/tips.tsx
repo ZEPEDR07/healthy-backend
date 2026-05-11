@@ -4,23 +4,27 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { apiGet, apiPost } from '../../src/api';
 import { theme } from '../../src/theme';
+import { useAuth } from '../../src/auth';
 
 type Tip = {
   id?: string;
   title: string;
   tip: string;
   focus: string;
+  premium?: boolean;
   created_at: string;
 };
 
-const FOCUS = [
-  { id: 'general', label: 'Geral', icon: 'sparkles' as const, color: theme.white },
+  const FOCUS = [
+  { id: 'general', label: 'Geral', icon: 'sparkles' as const, color: theme.primary },
   { id: 'recovery', label: 'Recovery', icon: 'pulse' as const, color: theme.recovery },
   { id: 'sleep', label: 'Sono', icon: 'moon' as const, color: theme.sleep },
   { id: 'strain', label: 'Strain', icon: 'flame' as const, color: theme.strain },
   { id: 'stress', label: 'Stress', icon: 'warning' as const, color: theme.stressOrange },
+  { id: 'nutrition', label: 'Nutrição', icon: 'restaurant' as const, color: theme.recovery },
 ];
 
 function focusColor(f: string) {
@@ -34,6 +38,8 @@ function focusLabel(f: string) {
 }
 
 export default function Tips() {
+  const router = useRouter();
+  const { user } = useAuth();
   const [tips, setTips] = useState<Tip[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
@@ -52,7 +58,7 @@ export default function Tips() {
   const generate = async (focus: string) => {
     setGenerating(focus);
     try {
-      const t = await apiPost<Tip>('/tips/generate', { focus });
+      const t = await apiPost<Tip & { premium?: boolean }>('/tips/generate', { focus });
       setTips((prev) => [t, ...prev]);
     } catch (e: any) {
       Alert.alert('Erro', e.message || 'Falha ao gerar dica.');
@@ -64,8 +70,26 @@ export default function Tips() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>Coach IA</Text>
-        <Text style={styles.subtitle}>Dicas personalizadas com base nos teus dados</Text>
+        <View style={styles.titleRow}>
+          <View>
+            <Text style={styles.title}>Coach IA</Text>
+            <Text style={styles.subtitle}>Dicas personalizadas com base nos teus dados</Text>
+          </View>
+          {!user?.premium_active && (
+            <TouchableOpacity testID="tips-upgrade-btn" style={styles.proPill} onPress={() => router.push('/premium')}>
+              <Ionicons name="star" size={12} color={theme.premium} />
+              <Text style={styles.proPillText}>PRO</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {!user?.premium_active && (
+          <TouchableOpacity testID="tips-upgrade-banner" style={styles.banner} onPress={() => router.push('/premium')}>
+            <Ionicons name="lock-closed" size={16} color={theme.premium} />
+            <Text style={styles.bannerText}>Dicas premium são mais longas e personalizadas. Trial 15 dias grátis.</Text>
+            <Ionicons name="chevron-forward" size={16} color={theme.premium} />
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.sectionLabel}>Gerar dica</Text>
         <View style={styles.chips}>
@@ -120,8 +144,15 @@ export default function Tips() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.bg },
   scroll: { padding: 20, paddingBottom: 40 },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 },
   title: { color: '#fff', fontSize: 28, fontWeight: '800' },
-  subtitle: { color: theme.textSecondary, fontSize: 14, marginTop: 4, marginBottom: 22 },
+  subtitle: { color: theme.textSecondary, fontSize: 14, marginTop: 4 },
+  proPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1, borderColor: theme.premium, backgroundColor: theme.premium + '1A' },
+  proPillText: { color: theme.premium, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  banner: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, backgroundColor: theme.premium + '1A', borderRadius: 12, borderWidth: 1, borderColor: theme.premium + '55', marginBottom: 18 },
+  bannerText: { color: '#fff', fontSize: 13, fontWeight: '600', flex: 1 },
+  premiumChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 999, borderWidth: 1, borderColor: theme.premium + '66', backgroundColor: theme.premium + '1A', marginLeft: 8 },
+  premiumChipText: { color: theme.premium, fontSize: 9, fontWeight: '800' },
   sectionLabel: { color: theme.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 22 },
   chip: {

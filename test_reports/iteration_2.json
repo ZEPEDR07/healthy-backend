@@ -1,0 +1,82 @@
+{
+  "summary": "Iteration 2 testing. Backend: created /app/backend/tests/test_iteration2.py with 15 NEW tests covering onboard-with-health, profile PATCH, premium (status/start-trial/redeem), new today metrics fields (body_battery, stress_highest/lowest/avg), history caps (free=30 / premium up to 365), tips free-vs-premium, nutrition (analyze with real food JPEG, today aggregation, delete, free-tier 4th=402). ALL 15 NEW + ALL 24 OLD iteration1 tests PASSED (39/39 = 100%). Frontend: onboarding 4 steps end-to-end works (devices mi_band_7/8/9 + apple_watch, age/gender/height/weight inputs, goal, finish). New dashboard cards all render (rings-card, coaching-card, stress-card, battery-card, nutrition-summary-card, sync-pill) and nutrition-add-btn correctly navigates to /(tabs)/nutrition. Nutrition tab renders with daily totals (0/2200 kcal), Câmara/Galeria buttons, empty state, free-tier banner. Premium screen has all required testIDs. CRITICAL BUG FOUND AND FIXED: /(tabs)/tips.tsx was throwing 'useRouter is not defined' red-screen error on mount — missing imports for useRouter and useAuth. Added both imports; after restart of expo, Tips screen renders cleanly with focus chips (including new 'Nutrição') and tip cards.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "app/(tabs)/tips.tsx (FIXED)",
+        "issue": "RED-SCREEN crash: ReferenceError 'useRouter is not defined' at line 39. Component uses `useRouter()` and `useAuth()` but missing import statements for both. Made Tips tab completely unusable. Fixed by adding `import { useRouter } from 'expo-router'` and `import { useAuth } from '../../src/auth'`. Verified renders cleanly after Expo restart.",
+        "testID": "tips screen",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "app/(tabs)/profile.tsx",
+        "issue": "Profile screen shows 'Atleta' as user name instead of the real name (e.g. 'Demo' is in /auth/me). Avatar shows 'U' (first letter fallback) instead of 'D'. Indicates the screen is rendering with a default/empty user object rather than the auth context's loaded user. Same screen also lists only 'Apple Watch' device label even though demo user has [apple_watch, mi_band_8] on backend → Mi Band 7/8/9 label rendering missing or filtered.",
+        "testID": "profile screen",
+        "priority": "HIGH"
+      },
+      {
+        "component": "app/(tabs)/profile.tsx Dados de Saúde rows",
+        "issue": "Health rows always render '—' for age/gender/height/weight/goal even after onboarding submitted those values. For a freshly registered user that went through full 4-step onboarding (verified backend stored age=30, height=178, weight=75, gender=male, goal=performance via /auth/me curl), the profile still showed all dashes. Suggests AuthContext.user is not refreshed (no /auth/me re-fetch) after /auth/onboard returns the updated user.",
+        "testID": "profile screen / DADOS DE SAÚDE block",
+        "priority": "HIGH"
+      },
+      {
+        "component": "app/(tabs)/profile.tsx premium pill",
+        "issue": "testID 'profile-premium-pill' is never present — only 'profile-upgrade-btn' renders. Even after a successful POST /premium/redeem (HEALTHY → lifetime), profile still shows the upgrade CTA. Likely same root cause: AuthContext not refreshing user after premium status changes. Need a refreshUser() call after onboard/redeem/start-trial.",
+        "testID": "profile-premium-pill",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Premium redeem flow on /premium page",
+        "issue": "On web browser test, POST /api/premium/redeem returned 401 Unauthorized when clicked via UI (backend log: 'POST /api/premium/redeem HTTP/1.1 401'). Direct backend testing of the same endpoint with the same token works (15/15 iter2 tests pass). Possibly: token is not attached to the request because AsyncStorage on web has a race with React state when navigating profile→/premium, OR the /premium screen's apiPost call doesn't get the auth header. Backend itself is fine.",
+        "affected_testIDs": ["premium-redeem-btn", "premium-code-input"]
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": [
+      {
+        "component": "Various",
+        "issue": "Non-blocking warnings persist: 'props.pointerEvents is deprecated. Use style.pointerEvents' and 'Image: style.resizeMode is deprecated. Please use props.resizeMode'. Also Expo package mismatch warnings (async-storage 3.0.2 vs expected 2.2.0, react-native-svg 15.15.4 vs 15.12.1, expo-image-picker 55 vs ~17). These do not break runtime but should be aligned for native builds."
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration2.py",
+    "/app/backend/tests/test_pulse_api.py",
+    "/app/test_reports/pytest/pytest_results_iter2.xml"
+  ],
+  "action_items": [
+    "Fix AuthContext refresh: after successful /auth/onboard, /auth/profile PATCH, /premium/start-trial and /premium/redeem responses, call a refreshUser() (or directly setUser(response)) so screens that read `useAuth().user` see the new age/height/weight/goal/devices/premium_status. Today the auth context is set only at login/register and never updated.",
+    "Profile.tsx must render the real `user.name` (and avatar initial) instead of falling back to 'Atleta' / 'U'. Investigate why useAuth() user is null/empty on /profile when /auth/me works fine.",
+    "Profile.tsx device-row mapping must include labels for `mi_band_7`, `mi_band_8`, `mi_band_9` (currently only Apple Watch shows). Backend supports all four.",
+    "Investigate /premium screen 401 on redeem-btn click: ensure apiPost('/premium/redeem',…) sends Bearer token. May be a /premium page bootstrapping issue where token from AsyncStorage isn't yet read at mount; await the auth init before showing the button or read token directly on submit.",
+    "Optional: silence pointerEvents / resizeMode deprecations and align Expo SDK package versions (async-storage, react-native-svg, expo-image-picker)."
+  ],
+  "critical_code_review_comments": [
+    "server.py grew to ~611 LoC with iteration 2 (premium + nutrition routes). Still acceptable; consider splitting into routers/{auth,metrics,tips,premium,nutrition}.py before iteration 3.",
+    "Mongo _id correctly excluded everywhere via projection or explicit dict filter (e.g. nutrition/analyze response builds dict excluding _id) — good.",
+    "Premium gating logic is_premium_active() correctly handles lifetime + trial_end expiry — good.",
+    "Free-tier nutrition limit uses count_documents on date string — correct and timezone-consistent with UTC.",
+    "JWT_SECRET, MONGO_URL, EMERGENT_LLM_KEY all from env — good.",
+    "Bug surface in frontend: missing imports in tips.tsx slipped through because Expo CI mode doesn't fail on undefined symbols at bundle time (only at render). Recommend adding eslint no-undef or TypeScript strict-mode pre-commit."
+  ],
+  "updated_files": [
+    "/app/frontend/app/(tabs)/tips.tsx (added missing useRouter and useAuth imports — fixes red-screen crash)",
+    "/app/backend/tests/test_iteration2.py (NEW, 15 tests)"
+  ],
+  "success_rate": {
+    "backend": "100% (39/39 — 24 iter1 + 15 iter2 new)",
+    "frontend": "~80% (Tips crash fixed; remaining HIGH issues: profile user data not refreshed, missing Mi Band labels, premium pill never renders, /premium redeem 401)"
+  },
+  "seed_data_creation": "Created multiple fresh users via /auth/register (test+i2-…@pulse.app for backend pytest, test+ui1778458388@pulse.app for UI), one redeemed HEALTHY → lifetime. Real food (pizza) image base64-fetched from Unsplash for nutrition tests — Claude Sonnet 4.5 vision returned valid macros across 4+ calls. No manual DB writes.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend is fully green (39/39). Frontend has 4 open HIGH issues all rooted in AuthContext not refreshing after backend mutations. Once main agent adds a refreshUser() in auth.tsx and calls it from onboarding finish-btn / premium redeem & start-trial handlers (and PATCH /auth/profile), retest by: (1) login fresh user via UI → assert profile.tsx shows real name, age, height, weight, goal, devices including Mi Band labels. (2) tap profile-premium-row → enter HEALTHY → tap premium-redeem-btn → return to profile → assert profile-premium-pill present and profile-upgrade-btn absent. Backend pytest can be re-run with: pytest /app/backend/tests/ -v",
+  "rca_of_issue": "BUG1 (FIXED): /(tabs)/tips.tsx used `useRouter()` and `useAuth()` but their import statements were never added — file relied on identifiers defined nowhere. Result: ReferenceError crash, red error screen, Tips tab unusable on web (and would crash native). Fix: added `import { useRouter } from 'expo-router'` and `import { useAuth } from '../../src/auth'`. Verified end-to-end after `sudo supervisorctl restart expo`. BUG2-4: Multiple symptoms (Atleta default name, '—' health rows, missing Mi Band device labels, missing premium pill, 401 on /premium redeem from UI) all consistent with AuthContext.user being set once at login/register and never updated after subsequent mutations (onboard, profile PATCH, premium start-trial/redeem). Reproduce: fresh register → complete onboarding with all health info + Mi Band 7/8/9 → backend /auth/me returns full data (verified) but UI profile shows blanks."
+}

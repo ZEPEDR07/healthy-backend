@@ -16,16 +16,23 @@ export default function TabsLayout() {
           paddingTop: 6,
           paddingBottom: 8,
         },
-        tabBarActiveTintColor: theme.recovery,
+        tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.textTertiary,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.4 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.3 },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Hoje',
-          tabBarIcon: ({ color, size }) => <Ionicons name="pulse" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="nutrition"
+        options={{
+          title: 'Nutrição',
+          tabBarIcon: ({ color, size }) => <Ionicons name="restaurant" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -38,7 +45,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="tips"
         options={{
-          title: 'Dicas',
+          title: 'Coach',
           tabBarIcon: ({ color, size }) => <Ionicons name="sparkles" size={size} color={color} />,
         }}
       />
