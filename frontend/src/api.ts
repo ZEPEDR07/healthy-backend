@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const BASE = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://healthy-backend-production.up.railway.app';
 
 async function authHeaders() {
   const token = await AsyncStorage.getItem('auth_token');
