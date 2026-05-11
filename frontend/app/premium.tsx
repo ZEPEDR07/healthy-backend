@@ -63,6 +63,19 @@ export default function Premium() {
     }
   };
 
+  const onSubscribeMonthly = () => {
+    Alert.alert(
+      'Subscrever 10€/mês',
+      'Pagamentos via Stripe brevemente. Por enquanto, ativa o trial de 15 dias gratuito.',
+    );
+  };
+  const onSubscribeAnnual = () => {
+    Alert.alert(
+      'Subscrever 75€/ano',
+      'Pagamentos via Stripe brevemente. Por enquanto, ativa o trial de 15 dias gratuito.',
+    );
+  };
+
   const trialEnd = user?.trial_end ? new Date(user.trial_end) : null;
   const daysLeft = trialEnd ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86400000)) : 0;
 
@@ -130,15 +143,60 @@ export default function Premium() {
             </TouchableOpacity>
           )}
 
-          {/* CODE */}
-          <Text style={styles.codeLabel}>Tens um código promocional?</Text>
+          {/* PLANS */}
+          {!user?.premium_active && (
+            <>
+              <Text style={styles.codeLabel}>Escolhe o teu plano</Text>
+              <View style={styles.plansRow}>
+                <TouchableOpacity
+                  testID="plan-monthly-btn"
+                  style={styles.planCard}
+                  onPress={onSubscribeMonthly}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.planName}>Mensal</Text>
+                  <View style={styles.planPriceRow}>
+                    <Text style={styles.planPrice}>10€</Text>
+                    <Text style={styles.planPriceUnit}>/mês</Text>
+                  </View>
+                  <Text style={styles.planSub}>Flexível · cancela quando quiseres</Text>
+                  <View style={styles.planCta}>
+                    <Text style={styles.planCtaText}>Subscrever</Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  testID="plan-annual-btn"
+                  style={[styles.planCard, styles.planCardBest]}
+                  onPress={onSubscribeAnnual}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.bestBadge}>
+                    <Text style={styles.bestBadgeText}>POUPA 37%</Text>
+                  </View>
+                  <Text style={[styles.planName, { color: theme.premium }]}>Anual</Text>
+                  <View style={styles.planPriceRow}>
+                    <Text style={[styles.planPrice, { color: theme.premium }]}>75€</Text>
+                    <Text style={styles.planPriceUnit}>/ano</Text>
+                  </View>
+                  <Text style={styles.planSub}>Equivale a 6,25€/mês</Text>
+                  <View style={[styles.planCta, { backgroundColor: theme.premium }]}>
+                    <Text style={styles.planCtaText}>Subscrever</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+
+          {/* PRIVATE CODE (no hints, no examples) */}
+          <Text style={styles.codeLabel}>Código privado</Text>
           <View style={styles.codeRow}>
             <TextInput
               testID="premium-code-input"
               style={styles.codeInput}
               value={code}
               onChangeText={(t) => setCode(t.toUpperCase())}
-              placeholder="EX: HEALTHY"
+              placeholder=""
               placeholderTextColor={theme.textTertiary}
               autoCapitalize="characters"
               autoCorrect={false}
@@ -154,7 +212,7 @@ export default function Premium() {
           </View>
 
           <Text style={styles.legal}>
-            Os trials ativados são vinculados à conta. Códigos de parceiros (ex: HEALTHY) concedem premium vitalício.
+            Trials e subscrições estão vinculados à conta. Renovação automática até cancelar nas definições.
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -184,6 +242,18 @@ const styles = StyleSheet.create({
   trialBtnText: { color: '#000', fontSize: 17, fontWeight: '800' },
   trialBtnSub: { color: '#00000099', fontSize: 12, fontWeight: '600', marginTop: 4 },
   codeLabel: { color: theme.textSecondary, fontSize: 12, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 },
+  plansRow: { flexDirection: 'row', gap: 10, marginBottom: 22 },
+  planCard: { flex: 1, backgroundColor: theme.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: theme.border, position: 'relative' },
+  planCardBest: { borderColor: theme.premium },
+  bestBadge: { position: 'absolute', top: -10, right: 12, backgroundColor: theme.premium, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
+  bestBadgeText: { color: '#000', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  planName: { color: '#fff', fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  planPriceRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 8 },
+  planPrice: { color: '#fff', fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
+  planPriceUnit: { color: theme.textSecondary, fontSize: 13, marginLeft: 4, fontWeight: '600' },
+  planSub: { color: theme.textSecondary, fontSize: 11, marginTop: 4, marginBottom: 12 },
+  planCta: { backgroundColor: theme.primary, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
+  planCtaText: { color: '#000', fontSize: 13, fontWeight: '800' },
   codeRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   codeInput: { flex: 1, backgroundColor: theme.card, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, color: '#fff', borderWidth: 1, borderColor: theme.border, fontSize: 16, letterSpacing: 2, fontWeight: '700' },
   redeemBtn: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: 12, backgroundColor: theme.premium, alignItems: 'center', justifyContent: 'center' },
