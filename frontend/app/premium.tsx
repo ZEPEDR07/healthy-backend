@@ -19,12 +19,22 @@ const FEATURES = [
 
 export default function Premium() {
   const router = useRouter();
-  const { user, startTrial, redeemCode } = useAuth();
+  const { user, loading, startTrial, redeemCode } = useAuth();
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState<'trial' | 'redeem' | null>(null);
+  const [busy, setBusy] = useState<'trial' | 'redeem' | null>(null);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: theme.textSecondary }}>A carregar...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const onStartTrial = async () => {
-    setLoading('trial');
+    setBusy('trial');
     try {
       await startTrial();
       Alert.alert('Trial ativado!', '15 dias de premium gratuitos. Sem cartão.');
@@ -32,7 +42,7 @@ export default function Premium() {
     } catch (e: any) {
       Alert.alert('Erro', e.message || 'Falha ao iniciar trial.');
     } finally {
-      setLoading(null);
+      setBusy(null);
     }
   };
 
@@ -41,7 +51,7 @@ export default function Premium() {
       Alert.alert('Erro', 'Insere um código.');
       return;
     }
-    setLoading('redeem');
+    setBusy('redeem');
     try {
       await redeemCode(code.trim());
       Alert.alert('🎉 Sucesso!', 'Premium vitalício desbloqueado.');
@@ -49,7 +59,7 @@ export default function Premium() {
     } catch (e: any) {
       Alert.alert('Código inválido', e.message || 'Verifica o código e tenta novamente.');
     } finally {
-      setLoading(null);
+      setBusy(null);
     }
   };
 
@@ -111,11 +121,11 @@ export default function Premium() {
           {!user?.premium_active && (
             <TouchableOpacity
               testID="premium-trial-btn"
-              style={[styles.trialBtn, loading === 'trial' && { opacity: 0.6 }]}
+              style={[styles.trialBtn, busy === 'trial' && { opacity: 0.6 }]}
               onPress={onStartTrial}
-              disabled={loading !== null}
+              disabled={busy !== null}
             >
-              <Text style={styles.trialBtnText}>{loading === 'trial' ? 'A ativar...' : 'Iniciar trial de 15 dias'}</Text>
+              <Text style={styles.trialBtnText}>{busy === 'trial' ? 'A ativar...' : 'Iniciar trial de 15 dias'}</Text>
               <Text style={styles.trialBtnSub}>Sem cartão de crédito · Cancela quando quiseres</Text>
             </TouchableOpacity>
           )}
@@ -135,9 +145,9 @@ export default function Premium() {
             />
             <TouchableOpacity
               testID="premium-redeem-btn"
-              style={[styles.redeemBtn, loading === 'redeem' && { opacity: 0.6 }]}
+              style={[styles.redeemBtn, busy === 'redeem' && { opacity: 0.6 }]}
               onPress={onRedeem}
-              disabled={loading !== null}
+              disabled={busy !== null}
             >
               <Text style={styles.redeemBtnText}>Resgatar</Text>
             </TouchableOpacity>

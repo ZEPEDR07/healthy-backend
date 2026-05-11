@@ -74,20 +74,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const onboard = async (payload: any) => {
     const u = await apiPost<User>('/auth/onboard', payload);
     setUser(u);
+    await refresh();
   };
   const updateProfile = async (payload: any) => {
     const u = await apiPatch<User>('/auth/profile', payload);
     setUser(u);
+    await refresh();
     return u;
   };
   const startTrial = async () => {
     const u = await apiPost<User>('/premium/start-trial', {});
     setUser(u);
+    await refresh();
     return u;
   };
   const redeemCode = async (code: string) => {
     const u = await apiPost<User>('/premium/redeem', { code });
     setUser(u);
+    await refresh();
     return u;
   };
 

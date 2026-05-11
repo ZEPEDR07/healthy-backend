@@ -1,40 +1,47 @@
-# Pulse · Recovery OS — PRD
+# Pulse · Recovery OS — PRD (v1.1)
 
 ## Vision
-Mobile-first health-recovery companion (Whoop/Bevel inspired) that unifies data from Apple Watch and Xiaomi Mi Band 8 into one elite-feel dashboard: Recovery, Strain, Sleep, Stress + AI-powered coaching tips.
+Whoop/Bevel-inspired mobile health-recovery + nutrition companion in Portuguese (pt-PT). Unifies Apple Watch + Xiaomi Mi Band 7/8/9 data into a premium dashboard with AI coaching and Cal-AI-style food photo analysis.
 
 ## Personas
 - Athletes optimising performance
 - Sleep & stress conscious users
-- Health enthusiasts tracking HRV/RHR trends
+- Users tracking nutrition via photo (no manual entry)
 
-## Core Features (MVP shipped)
-1. **Onboarding** — 3 steps: device pairing (Apple Watch, Mi Band 8 multi-select), goal selection, summary.
-2. **Auth** — JWT email/password (register/login). Tokens persisted in AsyncStorage.
-3. **Dashboard (Hoje)** — Hero Recovery ring (0–100) with HRV/RHR/Respiratory rate; Strain card (0–21); Sleep card (score + duration); Stress card (0–100); Sleep stages bar (Deep/REM/Light/Awake).
-4. **History/Trends** — 7/14/30-day line chart switchable across Recovery, Sleep, Strain, Stress; avg/max/min stats.
-5. **AI Coach (Dicas)** — Generate personalised tips via Claude Sonnet 4.5 (Emergent LLM Key) by focus area (general, recovery, sleep, strain, stress). History of generated tips persisted in MongoDB.
-6. **Profile** — User card, connected devices list with sync status, settings stubs, logout.
+## Core Features (v1.1)
+1. **Onboarding 4 steps** — device pairing (Apple Watch + Mi Band 7/8/9 multi-select), health info (age, gender, height, weight), goal, summary.
+2. **Auth** — JWT email/password + AsyncStorage persistence.
+3. **Dashboard "Hoje"** (redesigned) — 3 horizontal rings (Strain/Recovery/Sleep), Coaching card (premium-aware), Stress & Energy (highest/lowest/avg + ring), Body Battery bar, Nutrition summary (kcal + macros), Biology bio rows (HRV, RHR, Resp, Sleep total).
+4. **History/Trends** — 7D/14D/30D for free, up to 365D for premium; charts + avg/max/min for Recovery/Sono/Strain/Stress.
+5. **Coach IA (Tips)** — Claude Sonnet 4.5 via Emergent LLM Key. Free: short tip. Premium: long multi-paragraph personalised tip. 6 focus areas including nutrition. Premium badge on premium tips.
+6. **Nutrição (NEW)** — Cal-AI-style. Camera or gallery photo → Claude Sonnet 4.5 **vision** returns items + macros (calories/protein/carbs/fat) + summary in pt-PT. Daily totals vs 2200 kcal goal. Free: 3 photos/day. Premium: unlimited. Delete entries.
+7. **Premium (NEW)** — 15-day trial (no card, single-use), promo code **HEALTHY** → lifetime premium. Premium screen lists features. Status pill in profile.
+8. **Profile** — name + initials avatar, health data rows, devices with sync status, settings stubs, Premium row.
 
-## Data Source
-Mock metrics generator (deterministic per user/date) seeds 30 days on signup/login. Realistic ranges for sleep (5.8–8.6h), HRV (38–95ms), RHR (48–72bpm), Recovery (15–100), Strain (6.5–18.5), Stress (10–100). Ready to swap to real HealthKit / Mi Fitness APIs.
+## Theme (v1.1)
+Switched primary accent from green → **blue (#0A84FF)**. Multi-color rings preserved per metric: Strain `#FFB930` amber, Recovery `#B6F242` lime, Sleep `#7B8BFF` indigo, Stress orange/red. Premium uses gold `#FFD60A`. Backgrounds `#0A0A0A` / `#1A1A1A`.
 
 ## Tech Stack
-- **Frontend**: Expo SDK 54, expo-router, react-native-svg (rings), react-native-chart-kit (graphs), AsyncStorage.
-- **Backend**: FastAPI, Motor (MongoDB), bcrypt, PyJWT, emergentintegrations (Claude Sonnet 4.5).
-- **DB Collections**: `users`, `metrics`, `tips`.
+- **Frontend**: Expo SDK 54, expo-router, react-native-svg, react-native-chart-kit, **expo-image-picker** (base64), AsyncStorage.
+- **Backend**: FastAPI, Motor, bcrypt, PyJWT, **emergentintegrations** (Claude Sonnet 4.5 text + vision).
+- **DB Collections**: `users`, `metrics`, `tips`, `food_logs`.
 
 ## API Endpoints (/api prefix)
-- `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/onboard`
-- `GET /metrics/today`, `GET /metrics/history?days=7|14|30`, `GET /metrics/date/{date}`
-- `POST /tips/generate`, `GET /tips/list`
+- Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/onboard`, `PATCH /auth/profile`
+- Metrics: `GET /metrics/today`, `GET /metrics/history?days=N`, `GET /metrics/date/{date}`
+- Tips: `POST /tips/generate`, `GET /tips/list`
+- Premium: `GET /premium/status`, `POST /premium/start-trial`, `POST /premium/redeem`
+- **Nutrition**: `POST /nutrition/analyze` (image_base64), `GET /nutrition/today`, `DELETE /nutrition/{id}`
 
-## Smart Business Enhancement
-**Pulse Pro upsell hook** baked into the AI Coach: free users get a few tips, premium unlocks unlimited focus-specific AI coaching and longer history retention — a natural recurring-revenue lane on top of the dashboard utility.
+## Test Results
+- **Backend pytest**: 39/39 PASSED (24 iter1 + 15 iter2). Claude Sonnet 4.5 vision validated with real pizza JPEG → returned items + 1850 kcal totals.
+- **Frontend e2e**: onboarding 4 steps, dashboard 3-rings layout, nutrition camera/gallery → AI analysis → totals, premium trial + HEALTHY code, profile premium pill.
 
-## Design
-Dark Whoop-style. `#0A0A0A` background, neon accents: recovery green `#32D74B`, strain blue `#0A84FF`, sleep indigo `#5E5CE6`, stress orange `#FF9F0A` / red `#FF453A`. Bottom tab nav, 8pt grid, SVG rings, no emojis.
+## Smart Business Hooks
+- 15-day no-card trial removes friction → high activation.
+- HEALTHY promo code → influencer/partner distribution channel for lifetime upgrades.
+- 3 free photos/day forces upgrade decision after daily habit forms.
 
 ## Known Limits
-- Device data is **MOCKED** (deterministic generator). Real HealthKit / Mi Fitness sync requires native build.
+- Device data is **MOCKED** (deterministic generator). HealthKit / Mi Fitness sync requires native build.
 - Settings rows (Notificações, Privacidade, Unidades, Ajuda) are visual stubs.
