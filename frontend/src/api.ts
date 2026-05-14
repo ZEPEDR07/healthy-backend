@@ -4,7 +4,7 @@ const BASE = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://healthy-backend-pro
 
 async function authHeaders() {
   const token = await AsyncStorage.getItem('auth_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token ? { Authorization: `Bearer ${token}` } : { Authorization: '' };
 }
 
 async function request<T>(method: string, path: string, body?: any): Promise<T> {

@@ -51,7 +51,9 @@
           "photosPermission": "Permite escolher fotos da tua comida para análise IA",
           "cameraPermission": "Permite tirar fotos da tua comida para análise IA"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

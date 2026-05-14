@@ -611,6 +611,10 @@ async def delete_food(food_id: str, user=Depends(get_current_user)):
 
 app.include_router(api_router)
 
+# Mount Pulse v1.2 extensions (notifications, status, preferences, devices, activity)
+from extensions import ext_router
+app.include_router(ext_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

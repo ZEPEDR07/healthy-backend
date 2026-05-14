@@ -1,0 +1,67 @@
+{
+  "expo": {
+    "name": "Healthy",
+    "slug": "healthy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "healthy",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.healthy.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Tira fotos da tua comida para análise IA",
+        "NSPhotoLibraryUsageDescription": "Escolhe fotos de comida para análise IA"
+      }
+    },
+    "android": {
+      "package": "com.healthy.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-image.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#000000"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite escolher fotos da tua comida para análise IA",
+          "cameraPermission": "Permite tirar fotos da tua comida para análise IA"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0a11e814-db80-4173-9490-0e012fcdbbaf"
+      }
+    },
+    "owner": "zepedr07"
+  }
+}
