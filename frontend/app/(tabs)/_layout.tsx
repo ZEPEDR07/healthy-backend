@@ -2,8 +2,13 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../src/theme';
+import { useAuth } from '../../src/auth';
+import { t } from '../../src/i18n';
 
 export default function TabsLayout() {
+  // useAuth triggers re-render when prefs change (language)
+  useAuth();
+
   return (
     <Tabs
       screenOptions={{
@@ -24,35 +29,35 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Hoje',
+          title: t('tabs.home'),
           tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="nutrition"
         options={{
-          title: 'Nutrição',
+          title: t('tabs.nutrition'),
           tabBarIcon: ({ color, size }) => <Ionicons name="restaurant" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: 'Histórico',
+          title: t('tabs.history'),
           tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="tips"
         options={{
-          title: 'Coach',
+          title: t('tabs.tips'),
           tabBarIcon: ({ color, size }) => <Ionicons name="sparkles" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Perfil',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" size={size} color={color} />,
         }}
       />
