@@ -8,18 +8,18 @@ export const theme = {
   textTertiary: '#636366',
   border: '#2A2A2A',
   borderFocus: '#0A84FF',
-  // accents — primary is BLUE now
+  // accents
   primary: '#0A84FF',
   primarySoft: '#2A6FE0',
-  // metric colors (kept multi-color as in screenshot)
-  recovery: '#B6F242',     // lime/green-yellow
-  strain: '#FFB930',       // amber
-  sleep: '#7B8BFF',        // indigo-blue
+  // metric colors — neon
+  recovery: '#39FF14',     // neon green
+  strain: '#FF6B00',       // neon orange
+  sleep: '#00CFFF',        // neon blue
   stressOrange: '#FF9F0A',
   stressRed: '#FF453A',
   ok: '#34C759',
-  premium: '#FFD60A',      // gold for premium markers
-  battery: '#B6F242',
+  premium: '#FFD60A',
+  battery: '#39FF14',
   white: '#FFFFFF',
 };
 

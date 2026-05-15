@@ -112,7 +112,7 @@ export default function Profile() {
           <SettingRow testID="settings-notifications" icon="notifications-outline" label={t('profile.notifications')} onPress={() => router.push('/settings/notifications')} />
           <SettingRow testID="settings-units" icon="speedometer-outline" label={t('profile.units')} hint={prefs.units === 'metric' ? 'cm · kg · km' : 'in · lb · mi'} onPress={() => router.push('/settings/units')} />
           <SettingRow testID="settings-language" icon="language-outline" label={t('profile.language')} hint={`${langFlag}`} onPress={() => router.push('/settings/language')} />
-          <SettingRow testID="settings-help" icon="help-circle-outline" label={t('profile.help')} onPress={() => {}} last />
+          <SettingRow testID="settings-help" icon="help-circle-outline" label={t('profile.help')} onPress={() => router.push('/settings/help')} last />
         </View>
 
         <TouchableOpacity testID="profile-logout-btn" style={styles.logoutBtn} onPress={confirmLogout}>
