@@ -68,12 +68,7 @@
           "cameraPermission": "Permite tirar fotos da tua comida para análise IA"
         }
       ],
-      [
-        "react-native-health-connect",
-        {
-          "package": "com.healthy.app"
-        }
-      ],
+      "react-native-health-connect",
       "@react-native-community/datetimepicker",
       "expo-localization"
     ],
