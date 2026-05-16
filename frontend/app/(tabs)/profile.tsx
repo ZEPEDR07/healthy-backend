@@ -1,9 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from '../../src/theme';
 import { t, formatHeight, formatWeight } from '../../src/i18n';
 
@@ -39,6 +41,40 @@ export default function Profile() {
   const isLifetime = user?.premium_status === 'lifetime';
   const trialEnd = user?.trial_end ? new Date(user.trial_end) : null;
   const daysLeft = trialEnd ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86400000)) : 0;
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem('profile_photo').then(uri => { if (uri) setPhotoUri(uri); });
+  }, []);
+
+  const pickPhoto = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Permissão necessária', 'Permite acesso à galeria para escolher uma foto.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]?.uri) {
+      const uri = result.assets[0].uri;
+      setPhotoUri(uri);
+      await AsyncStorage.setItem('profile_photo', uri);
+    }
+  };
+
+  const removePhoto = () => {
+    Alert.alert('Remover foto', 'Tens a certeza?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Remover', style: 'destructive', onPress: async () => {
+        setPhotoUri(null);
+        await AsyncStorage.removeItem('profile_photo');
+      }},
+    ]);
+  };
 
   const langFlag = { pt: '🇵🇹', en: '🇬🇧', es: '🇪🇸', fr: '🇫🇷' }[prefs.language] || '🇵🇹';
 
@@ -46,9 +82,16 @@ export default function Profile() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.headerCard}>
-          <View style={styles.avatarBig}>
-            <Text style={styles.avatarText}>{initials}</Text>
-          </View>
+          <TouchableOpacity style={styles.avatarBig} onPress={pickPhoto} onLongPress={photoUri ? removePhoto : undefined}>
+            {photoUri ? (
+              <Image source={{ uri: photoUri }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{initials}</Text>
+            )}
+            <View style={styles.avatarEditBadge}>
+              <Ionicons name="camera" size={10} color="#000" />
+            </View>
+          </TouchableOpacity>
           <Text testID="profile-name" style={styles.name}>{user?.name || 'Atleta'}</Text>
           <Text style={styles.email}>{user?.email}</Text>
           {premiumActive ? (
@@ -156,6 +199,8 @@ const styles = StyleSheet.create({
   scroll: { padding: 20, paddingBottom: 40 },
   headerCard: { alignItems: 'center', backgroundColor: theme.card, borderRadius: 20, padding: 22, borderWidth: 1, borderColor: theme.border, marginBottom: 22 },
   avatarBig: { width: 80, height: 80, borderRadius: 40, backgroundColor: theme.cardElevated, alignItems: 'center', justifyContent: 'center', marginBottom: 12, borderWidth: 2, borderColor: theme.primary },
+  avatarImage: { width: 80, height: 80, borderRadius: 40 },
+  avatarEditBadge: { position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: theme.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.card },
   avatarText: { color: '#fff', fontSize: 26, fontWeight: '800' },
   name: { color: '#fff', fontSize: 22, fontWeight: '800' },
   email: { color: theme.textSecondary, fontSize: 14, marginTop: 2 },
