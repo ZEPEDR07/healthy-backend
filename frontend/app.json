@@ -42,7 +42,8 @@
         "android.permission.health.READ_OXYGEN_SATURATION",
         "android.permission.health.READ_RESPIRATORY_RATE",
         "android.permission.health.READ_RESTING_HEART_RATE"
-      ]
+      ],
+      "minSdkVersion": 26
     },
     "web": {
       "bundler": "metro",
