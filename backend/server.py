@@ -275,7 +275,6 @@ async def register(req: RegisterReq):
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.users.insert_one(user_doc)
-    await ensure_metrics_for_user(user_id, days=30)
     token = create_token(user_id)
     return AuthResp(token=token, user=user_doc_to_out(user_doc))
 
@@ -285,7 +284,6 @@ async def login(req: LoginReq):
     user = await db.users.find_one({"email": req.email.lower()})
     if not user or not verify_password(req.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    await ensure_metrics_for_user(user["id"], days=30)
     token = create_token(user["id"])
     return AuthResp(token=token, user=user_doc_to_out(user))
 
@@ -325,7 +323,6 @@ async def update_profile(req: ProfileUpdateReq, user=Depends(get_current_user)):
 
 @api_router.get("/metrics/today")
 async def metrics_today(user=Depends(get_current_user)):
-    await ensure_metrics_for_user(user["id"], days=30)
     today = datetime.now(timezone.utc).date().strftime("%Y-%m-%d")
     m = await db.metrics.find_one({"user_id": user["id"], "date": today}, {"_id": 0, "user_id": 0})
     return m
@@ -336,7 +333,6 @@ async def metrics_history(days: int = 7, user=Depends(get_current_user)):
     premium = is_premium_active(user)
     max_days = 365 if premium else 30
     days = min(max(days, 1), max_days)
-    await ensure_metrics_for_user(user["id"], days=max(days, 30))
     cursor = db.metrics.find(
         {"user_id": user["id"]},
         {"_id": 0, "user_id": 0}
@@ -386,7 +382,6 @@ async def redeem_code(req: PremiumRedeemReq, user=Depends(get_current_user)):
 # ============ TIPS ============
 @api_router.post("/tips/generate")
 async def generate_tip(req: TipReq, user=Depends(get_current_user)):
-    await ensure_metrics_for_user(user["id"], days=7)
     today = datetime.now(timezone.utc).date().strftime("%Y-%m-%d")
     m = await db.metrics.find_one({"user_id": user["id"], "date": today}, {"_id": 0, "user_id": 0})
     if not m:
@@ -608,6 +603,63 @@ async def delete_food(food_id: str, user=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Não encontrado")
     return {"ok": True}
 
+
+
+
+# ============ METRICS SYNC (Health Connect / HealthKit) ============
+class MetricsSyncReq(BaseModel):
+    date: str
+    steps: Optional[int] = 0
+    km: Optional[float] = 0
+    active_minutes: Optional[int] = 0
+    calories: Optional[int] = 0
+    resting_hr: Optional[int] = 0
+    hrv: Optional[int] = 0
+    sleep_hours: Optional[float] = 0
+    sleep_score: Optional[int] = 0
+    respiratory_rate: Optional[float] = 0
+    stress: Optional[int] = 0
+    recovery: Optional[int] = 0
+    strain: Optional[float] = 0
+    body_battery: Optional[int] = 0
+
+@api_router.post("/metrics/sync")
+async def sync_metrics(req: MetricsSyncReq, user=Depends(get_current_user)):
+    """Receive real health data from Health Connect or HealthKit and store/update."""
+    data = req.dict()
+    data["user_id"] = user["id"]
+    data["source"] = "health_connect"
+    data["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Derived fields to fill gaps
+    if data.get("sleep_hours") and not data.get("sleep_score"):
+        data["sleep_score"] = min(100, int((data["sleep_hours"] / 8) * 100))
+
+    # Keep existing simulation fields that are not provided
+    existing = await db.metrics.find_one({"user_id": user["id"], "date": req.date}, {"_id": 0})
+    if existing:
+        # Merge: real data overrides simulated
+        merged = {**existing, **{k: v for k, v in data.items() if v}}
+        await db.metrics.replace_one({"user_id": user["id"], "date": req.date}, merged)
+    else:
+        # Fill missing fields with defaults
+        defaults = {
+            "stress_highest": data.get("stress", 30),
+            "stress_lowest": max(0, data.get("stress", 30) - 20),
+            "stress_avg": data.get("stress", 30),
+            "sleep_stages": {"deep": 0, "rem": 0, "light": 0, "awake": 0},
+            "hr_zones": [0, 0, 0, 0, 0],
+            "stress_timeline": [data.get("stress", 30)] * 24,
+        }
+        await db.metrics.insert_one({**defaults, **data})
+
+    return {"ok": True, "date": req.date}
+
+@api_router.get("/metrics/sync/status")
+async def sync_status(user=Depends(get_current_user)):
+    """Check if user has real synced data."""
+    count = await db.metrics.count_documents({"user_id": user["id"], "source": "health_connect"})
+    return {"has_real_data": count > 0, "synced_days": count}
 
 app.include_router(api_router)
 
