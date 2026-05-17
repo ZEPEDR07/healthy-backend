@@ -13,7 +13,6 @@ import { apiGet } from '../../src/api';
 import { useAuth } from '../../src/auth';
 import { theme, recoveryColor, stressColor, strainColor } from '../../src/theme';
 import { t, formatLongDate, formatDistance, distanceUnit } from '../../src/i18n';
-import { useHealthSync } from '../../src/useHealthSync';
 
 type Metrics = {
   date: string;
@@ -85,7 +84,6 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
-  const { syncStatus, sync: syncHealth } = useHealthSync();
 
   const isToday = useMemo(() => sameDay(selectedDate, new Date()), [selectedDate]);
 
@@ -117,7 +115,7 @@ export default function Dashboard() {
 
   useEffect(() => { load(selectedDate); }, [selectedDate, load]);
 
-  const onRefresh = () => { setRefreshing(true); syncHealth(true); load(selectedDate); };
+  const onRefresh = () => { setRefreshing(true); load(selectedDate); };
 
   if (loading) {
     return (
@@ -151,14 +149,8 @@ export default function Dashboard() {
         {/* HEADER */}
         <View style={styles.topRow}>
           <View style={styles.syncPill} testID="sync-pill">
-            <Ionicons
-              name={syncStatus === 'syncing' ? 'sync' : syncStatus === 'synced' ? 'checkmark-circle' : 'cloud-offline-outline'}
-              size={14}
-              color={syncStatus === 'error' ? theme.stressRed : theme.primary}
-            />
-            <Text style={styles.syncText}>
-              {syncStatus === 'syncing' ? 'A sincronizar...' : syncStatus === 'synced' ? 'Health Connect' : t('home.synced')}
-            </Text>
+            <Ionicons name="checkmark-circle" size={14} color={theme.primary} />
+            <Text style={styles.syncText}>{t('home.synced')}</Text>
           </View>
           <View style={styles.topRightRow}>
             <TouchableOpacity
